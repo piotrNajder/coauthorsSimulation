@@ -1,6 +1,6 @@
 import functools
 
-@total_ordering
+@functools.total_ordering
 class Work():
 
     def __init__(self, quality, agents):
@@ -18,6 +18,9 @@ class Work():
     @property
     def Authors(self):
         return self._authors
+
+    def _is_valid_operand(self, other):
+        return (hasattr(other, "_quality"))
 
     def __eq__(self, other):
         if not self._is_valid_operand(other):

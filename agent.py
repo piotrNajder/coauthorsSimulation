@@ -1,4 +1,5 @@
-
+from random_gen import RandomGenerator as rg
+from work import Work
 
 class Agent():
     """The class representing the agent in the network of cooperators"""
@@ -54,14 +55,14 @@ class Agent():
     def getProbabilityOfCooperation(self, agent):
         prob = 0.0
         ag = list(filter(lambda a: a.get("agent").Id == agent.Id, self._listOfCoworkers))
-        if len(ag > 0):
+        if len(ag) > 0:
             prob = ag[0].get("prob")
 
         return prob
 
     def setProbabilityOfCooperation(self, agent, newVal):
         ag = list(filter(lambda a: a.get("agent").Id == agent.Id, self._listOfCoworkers))
-        if len(ag > 0):
+        if len(ag) > 0:
             p = newVal
             if p < 0.0: p = 0.0
             elif p > 1.0: p = 1.0
@@ -79,4 +80,22 @@ class Agent():
         return self
 
     def submitWork(self):
-        raise NotImplementedError
+        x = 0.0
+        x1 = 0.0
+        q = 0.0
+
+        listOfAgents = list()
+
+        if rg.ranf() < self._activity:
+            listOfAgents.append(self)
+            q = self._quality + self._sdQuality * rg.granf()
+
+            for coWorker in self._listOfCoworkers:
+                x = rg.ranf()
+                x1 = float(coWorker.get("prob"))
+                if x < x1:
+                    q += float(coWorker.get("agent").Quality) + \
+                         float(coWorker.get("agent").SdQuality) * rg.granf()
+                    listOfAgents.append(coWorker.get("agent"))
+
+        return Work(q, listOfAgents)
