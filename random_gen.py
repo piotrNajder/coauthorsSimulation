@@ -3,12 +3,13 @@ import random
 class RandomGenerator():
 
     @staticmethod
-    def ranf():
-        return random.uniform(0.0, 1.0)
+    def ranf(lowLimit = 0.0, highLimit = 1.0):
+        return random.uniform(lowLimit, highLimit)
+
 
     @staticmethod
-    def granf():
-        return random.uniform(-2.0, 2.0)
+    def granf(lowLimit = -2.0, highLimit = 2.0):
+        return random.uniform(lowLimit, highLimit)
 
     @staticmethod
     def iranx(limit):

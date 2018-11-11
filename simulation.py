@@ -28,15 +28,15 @@ def createNetwork(numOfAgents, theList, config):
     thr = float(config.get("threshold"))
     printMarker = int(numOfAgents / 10)
     for k in range(0, numOfAgents + 1):
+        ### progress bar 
         if k % printMarker == 0:
             print("#", end = "")
             sys.stdout.flush()
             
         ### get two random Ids
-        i = 0
-        j = 0
-        while(i == j):
-            i = rg.iranx(numOfAgents) - 1
+        i = rg.iranx(numOfAgents) - 1
+        j = rg.iranx(numOfAgents) - 1
+        while(i == j):            
             j = rg.iranx(numOfAgents) - 1
 
         ### get agent objects for given id
@@ -120,7 +120,7 @@ def main(args):
 
     print("Starting the simulation")
     ### Run the world
-    for period in range(0, int(worldConfig.get("max_period"))):
+    for period in range(0, int(worldConfig.get("max_period")) + 1):
         stepText = "\tStep {:^4} / {}".format(period, int(worldConfig.get("max_period")))
         print(len(stepText) * "\b", end = "")
         sys.stdout.flush()
@@ -129,25 +129,30 @@ def main(args):
 
         ### Lower the agents credits
         ### Generate the works
+
+        cd = float(worldConfig.get("credit_decrese"))
         for ag in agentsList:
-            ag.Credit = ag.Credit - float(worldConfig.get("credit_decrese"))
+            ag.Credit = ag.Credit - cd
             work = ag.submitWork()
             if work.NumberOfAuthors > 0:
                 worksList.append(work)
         
         ### Works evolution
         worksList.sort()
-        for l, work in enumerate(worksList):
 
+        cd = float(worldConfig.get("credit_decrese"))
+        wc = float(len(worksList))
+        ac = float(len(agentsList))
+
+        s = float(worldConfig.get("step"))
+
+        for l, work in enumerate(worksList):
+            l = float(l)
             ### calculate the profit
-            p = 2.0 * float(worldConfig.get("credit_decrese")) * \
-                ( 1.0 - ( float(l) + 0.5 ) / float(len(worksList)) ) / \
-                float(len(worksList)) * float(len(agentsList))
+            p = 2.0 * cd * ( 1.0 - ( l + 0.5 ) / wc ) / wc * ac
 
             ### calculate new probability
-            d = float(worldConfig.get("step")) - 2.0 * \
-                float(l * float(worldConfig.get("step"))) / \
-                float(len(worksList))
+            d = s - 2.0 * l * s / wc
 
             ### Asign new credit for each author of work                
             for auth in work.Authors:
