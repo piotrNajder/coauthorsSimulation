@@ -5,9 +5,11 @@ from random_gen import RandomGenerator as rg
 import argparse
 import xml.etree.ElementTree as ET
 import numpy as np
+import matplotlib.pyplot as plt
 
 import os
 import sys
+
 
 def createAgents(numOfAgents, theList, config):
     credit = float(config.get("credit")) + float(config.get("std_credit"))
@@ -26,8 +28,9 @@ def createAgents(numOfAgents, theList, config):
 
 def createNetwork(numOfAgents, theList, config):
     thr = float(config.get("threshold"))
-    printMarker = int(numOfAgents / 10)
-    for k in range(0, numOfAgents + 1):
+    loops = int(config.get("neighbours_avg")) * numOfAgents + 1
+    printMarker = int(loops / 10)
+    for k in range(0, loops):
         ### progress bar 
         if k % printMarker == 0:
             print("#", end = "")
@@ -56,6 +59,7 @@ def createNetwork(numOfAgents, theList, config):
     print("")
 
 def saveHistogram(iteration, hist):
+
     fileDir = os.path.dirname(os.path.realpath('__file__'))
     fName = os.path.join(fileDir, "results/hist{}.dat".format(iteration))
     with open(fName, "w") as f:

@@ -89,7 +89,7 @@ class Agent():
         if rg.ranf() < self._activity:
             listOfAgents.append(self)
             q = self._quality + self._sdQuality * rg.granf()
-
+            #print("Agent: {} - coworkers: {}".format(self.Id, len(self._listOfCoworkers)))
             for coWorker in self._listOfCoworkers:
                 x = rg.ranf()
                 x1 = float(coWorker.get("prob"))
