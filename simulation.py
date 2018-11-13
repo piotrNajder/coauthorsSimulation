@@ -1,28 +1,35 @@
 from agent import Agent
 from work import Work
 from random_gen import RandomGenerator as rg
+from simu_utils import readConfigFile
 
 import argparse
-import xml.etree.ElementTree as ET
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+import math
 
 import os
 import sys
 
+CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
 
 def createAgents(numOfAgents, theList, config):
-    credit = float(config.get("credit")) + float(config.get("std_credit"))
+    credit = float(config.get("credit"))
+    std_credit = float(config.get("std_credit"))
     activity = float(config.get("activity"))
-    quality = float(config.get("mean_mean_quality")) + float(config.get("std_mean_quality"))
-    std_quality = float(config.get("mean_std_quality")) + float(config.get("std_std_quality"))
+    quality = float(config.get("mean_mean_quality")) 
+    std_mean_quality = float(config.get("std_mean_quality"))
+    std_quality = float(config.get("mean_std_quality")) 
+    std_std_qualty =  float(config.get("std_std_quality"))
 
-    for i in range(0, numOfAgents + 1):
+    for i in range(0, numOfAgents):
         ag = Agent(i, 
-                   credit * rg.granf(),
+                   credit + std_credit * rg.granf(),
                    activity,
-                   quality * rg.granf(),
-                   std_quality * rg.granf())
+                   quality + std_mean_quality * rg.granf(),
+                   std_quality + std_std_qualty * rg.granf())
 
         theList.append(ag)
 
@@ -65,20 +72,34 @@ def saveHistogram(iteration, hist):
     with open(fName, "w") as f:
         for i, val in enumerate(hist):
             if val != 0:
-                f.write("{} {}\n".format(i, float(val) / hist.sum()))
+                f.write("{} {:.3f}\n".format(i, float(val) / hist.sum()))
 
 def saveHistogramStats(counter, hist):    
     fileDir = os.path.dirname(os.path.realpath('__file__'))
     fName = os.path.join(fileDir, "results/w.dat")
+
+    mean = 0.0
+    std = 0.0
+    l = 0.0
+
+    for i in range(0, CONST_MAX_AUTHORS):
+        mean += i * float(hist[i])
+        std += i * i * float(hist[i])
+        l += hist[i]
+
+    mean /= l
+    std /= l
+    std = math.sqrt(std - mean * mean)
+
     with open(fName, "a") as f:
-        f.write("{} {} {} {}\n".format(counter, hist.mean(), hist.std(), hist.sum() ))
+        f.write("{} {:.3f} {:.3f} {}\n".format(counter, mean, std, l ))
 
 def saveConfig(iteration, theList):
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    fName = os.path.join(fileDir, "results/config{}.dat".format(iteration))
+    fName = os.path.join(fileDir, "results/agentStats{}.dat".format(iteration))
     with open(fName, "w") as f:
         for ag in theList:
-            f.write("{} {} {}\n".format(ag.Credit, ag.Quality, ag.NumberOfCoworkers))
+            f.write("{} {:.3f} {:.3f} {:.3f}\n".format(int(ag.Id), ag.Credit, ag.Quality, ag.NumberOfCoworkers))
 
 def saveProbabilitiesStats(iteration, theList):
     fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -88,8 +109,8 @@ def saveProbabilitiesStats(iteration, theList):
         for ag in theList:
             probF.write("{}".format(ag.Id))
             for coWorker in ag.ListOfCoworkers:
-                probF.write("{} {}".format(coWorker.get("agent").Id, coWorker.get("prob")))
-                probConfF.write("{}\n".format(coWorker.get("prob")))
+                probF.write("{} {:.3f}".format(coWorker.get("agent").Id, coWorker.get("prob")))
+                probConfF.write("{:.3f}\n".format(coWorker.get("prob")))
             
             probF.write("\n")
 
@@ -97,18 +118,9 @@ def main(args):
     
     worldConfig = {}
     agentsList = list()
-    worksList = list()
-    
-    CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
+    worksList = list()   
 
-    xmlTree = ET.parse(args.inputFile)
-    root = xmlTree.getroot()
-    if root.tag != "AuthorsWorldConfig":
-        print("Config file corrupted. Terminating...\n")
-
-    for child in root:
-        worldConfig[child.tag] = child.text   
-    
+    worldConfig = readConfigFile(args.inputFile)    
 
     ### Here we have config in dictonary
     ### We cann start the init part

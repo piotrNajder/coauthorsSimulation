@@ -80,8 +80,6 @@ class Agent():
         return self
 
     def submitWork(self):
-        x = 0.0
-        x1 = 0.0
         q = 0.0
 
         listOfAgents = list()
@@ -90,10 +88,8 @@ class Agent():
             listOfAgents.append(self)
             q = self._quality + self._sdQuality * rg.granf()
             #print("Agent: {} - coworkers: {}".format(self.Id, len(self._listOfCoworkers)))
-            for coWorker in self._listOfCoworkers:
-                x = rg.ranf()
-                x1 = float(coWorker.get("prob"))
-                if x < x1:
+            for coWorker in self._listOfCoworkers:                
+                if rg.ranf() < float(coWorker.get("prob")):
                     q += float(coWorker.get("agent").Quality) + \
                          float(coWorker.get("agent").SdQuality) * rg.granf()
                     listOfAgents.append(coWorker.get("agent"))

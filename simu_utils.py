@@ -1,4 +1,5 @@
 import re
+import xml.etree.ElementTree as ET
 
 ### UTILS ###
 
@@ -12,3 +13,16 @@ def natural_keys(text):
     (See Toothy's implementation in the comments)
     '''
     return [ atoi(c) for c in re.split('(\d+)', text) ]
+
+def readConfigFile(fName):
+    worldConfig = {}
+    
+    xmlTree = ET.parse(fName)
+    root = xmlTree.getroot()
+    if root.tag != "AuthorsWorldConfig":
+        print("Config file corrupted. Terminating...\n")
+
+    for child in root:
+        worldConfig[child.tag] = child.text
+
+    return worldConfig 

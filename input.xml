@@ -3,10 +3,12 @@
     <credit>10</credit>
     <std_credit>0</std_credit>
     <credit_decrese>0.1</credit_decrese>
+
     <mean_mean_quality>5.0</mean_mean_quality>
     <std_mean_quality>1.0</std_mean_quality>
     <mean_std_quality>1.0</mean_std_quality>
     <std_std_quality>0</std_std_quality>
+
     <activity>0.1</activity>
     <neighbours_avg>40</neighbours_avg>
     <n_test>100</n_test>
