@@ -88,21 +88,17 @@ filesList = gl.glob("./results/agentStats*.dat")
 filesList.sort(key = natural_keys)
 
 creditsArrays = list()
-qualitiesArrays = list()
 import pdb
 for asFile in filesList:
     with open(asFile, "r") as f:        
         lines = f.readlines()
         crs = np.zeros(len(lines))
-        qals = np.zeros(len(lines))
         for i, line in enumerate(lines):
             #pdb.set_trace()
             vals = line.split(" ")
             crs[i] = float(vals[1])
-            qals[i] = float(vals[2])
         
         creditsArrays.append(crs)
-        qualitiesArrays.append(qals)
 
 axesX = int(math.sqrt(len(creditsArrays)))
 axesY = axesX
@@ -130,35 +126,3 @@ plt.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9,
         top = 0.85, wspace = 0.8, hspace = 0.8)
 
 plt.show()
-
-axesX = int(math.sqrt(len(qualitiesArrays)))
-axesY = axesX
-if axesY * axesX < len(qualitiesArrays):
-    axesY += 1
-
-fig, axs = plt.subplots(axesX, axesY)
-
-fig.suptitle('Distibution of quality for given steps of simulation')
-
-qalsIndex = 0
-for i in range(0, axesX):
-    for j in range(0, axesY):
-        bins = (int(np.ceil(max(qualitiesArrays[qalsIndex]))) - int(np.floor(min(qualitiesArrays[qalsIndex])))) * 10
-        s = qalsIndex * n_test
-        if s == 0: s = 1
-
-        axs[i, j].hist(qualitiesArrays[qalsIndex], bins = bins)        
-        axs[i, j].set_title("s = {}".format(s))
-        qalsIndex += 1
-        if qalsIndex >= len(qualitiesArrays): break
-    if qalsIndex >= len(qualitiesArrays): break
-
-plt.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9,
-        top = 0.85, wspace = 0.8, hspace = 0.8)
-
-plt.show()
-
-
-
-
-

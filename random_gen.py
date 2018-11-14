@@ -9,8 +9,8 @@ class RandomGenerator():
        return random.uniform(lowLimit, highLimit)
 
     @staticmethod
-    def granf():   
-        return random.normalvariate(0, 1.0) 
+    def granf(m = 0.0, v = 1.0):   
+        return random.normalvariate(m, v) 
 
     @staticmethod
     def iranx(limit):        

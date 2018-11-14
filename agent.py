@@ -79,10 +79,10 @@ class Agent():
 
         if rg.ranf() < self._activity:
             listOfAgents.append(self)
-            q = self._quality + self._sdQuality * rg.granf()
+            q = self._quality + rg.granf(m = self._sdQuality)
             for coWorker in self._listOfCoworkers:                
                 if rg.ranf() < coWorker.Prob:
-                    q += coWorker.Agent.Quality + coWorker.Agent.SdQuality * rg.granf()
+                    q += coWorker.Agent.Quality + rg.granf(m = coWorker.Agent.SdQuality)
                     listOfAgents.append(coWorker.Agent)
 
         return Work(q, listOfAgents)

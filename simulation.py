@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import math
 
 import os
+import shutil
 import sys
 
 CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
@@ -26,12 +27,11 @@ def createAgents(numOfAgents, theList, config):
 
     for i in range(0, numOfAgents):
         theList.append(Agent(i, 
-                             credit + std_credit * rg.granf(),
+                             credit + rg.granf(m = std_credit),
                              activity,
-                             quality + std_mean_quality * rg.granf(),
-                             std_quality + std_std_qualty * rg.granf()))
+                             quality + rg.granf(m = std_mean_quality),
+                             std_quality + rg.granf(m = std_std_qualty)))
 
-       
 
 def createNetwork(numOfAgents, theList, config):
     thr = float(config.get("threshold"))
@@ -52,12 +52,12 @@ def createNetwork(numOfAgents, theList, config):
         ### get agent objects for given id
         ag1 = None
         ag2 = None
+        
+        ag = next((x for x in theList if x.Id == i), None)
+        if ag != None: ag1 = ag
 
-        ag = list(filter(lambda a: a.Id == i, theList))
-        if len(ag) > 0: ag1 = ag[0]
-
-        ag = list(filter(lambda a: a.Id == j, theList))
-        if len(ag) > 0: ag2 = ag[0]
+        ag = next((x for x in theList if x.Id == j), None)
+        if ag != None: ag2 = ag
 
         c = thr * rg.ranf()
         
@@ -125,6 +125,19 @@ def main(args):
     ### Here we have config in dictonary
     ### We cann start the init part
 
+    ### Check if results folder empty
+    ### Remove all files if not
+
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    folder = os.path.join(fileDir, "results")
+    for the_file in os.listdir(folder):
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
+
     ### Init the agents
     print("Creating authors")
     createAgents(int(worldConfig.get("number_of_agents")), agentsList, worldConfig)
@@ -183,6 +196,7 @@ def main(args):
                 c = work.Authors[i + 1].getProbOfCoop(work.Authors[0])
                 work.Authors[0].setProbOfCoop(work.Authors[i + 1], b + d)
                 work.Authors[i + 1].setProbOfCoop(work.Authors[0], c + d)
+
 
         ### Data evaluation - runs once per n_test simulation's steps
         if period % int(worldConfig.get("n_test")) == 0:    
