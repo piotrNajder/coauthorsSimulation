@@ -1,7 +1,7 @@
 from random_gen import RandomGenerator as rg
 from work import Work
 
-class Agent():
+class Agent():    
     """The class representing the agent in the network of cooperators"""
 
     def __init__(self, id, credit, activity, quality, sdQuality):
@@ -52,28 +52,21 @@ class Agent():
     def ListOfCoworkers(self):
         return self._listOfCoworkers
     
-    def getProbabilityOfCooperation(self, agent):
-        prob = 0.0
-        ag = list(filter(lambda a: a.get("agent").Id == agent.Id, self._listOfCoworkers))
-        if len(ag) > 0:
-            prob = ag[0].get("prob")
+    def getProbOfCoop(self, agent):        
+        ag = next((x for x in self._listOfCoworkers if x.Agent.Id == agent.Id), None)
+        if ag != None:
+            return ag.Prob
+        return 0.0
 
-        return prob
-
-    def setProbabilityOfCooperation(self, agent, newVal):
-        ag = list(filter(lambda a: a.get("agent").Id == agent.Id, self._listOfCoworkers))
-        if len(ag) > 0:
+    def setProbOfCoop(self, agent, newVal):
+        ag = next((x for x in self._listOfCoworkers if x.Agent.Id == agent.Id), None)
+        if ag != None:
             p = newVal
             if p < 0.0: p = 0.0
             elif p > 1.0: p = 1.0
-            ag[0]["prob"] = p
+            ag.Prob = p
 
-    def addCoworker(self, cowrker):
-        """Adds a new coworker to the list of coworkers
-        
-        Arguments:
-            cowrker {dcit} -- {"agent": agent, "prob": prob}
-        """
+    def addCoworker(self, cowrker):       
         self._listOfCoworkers.append(cowrker)
 
     def returnMe(self):
@@ -87,11 +80,31 @@ class Agent():
         if rg.ranf() < self._activity:
             listOfAgents.append(self)
             q = self._quality + self._sdQuality * rg.granf()
-            #print("Agent: {} - coworkers: {}".format(self.Id, len(self._listOfCoworkers)))
             for coWorker in self._listOfCoworkers:                
-                if rg.ranf() < float(coWorker.get("prob")):
-                    q += float(coWorker.get("agent").Quality) + \
-                         float(coWorker.get("agent").SdQuality) * rg.granf()
-                    listOfAgents.append(coWorker.get("agent"))
+                if rg.ranf() < coWorker.Prob:
+                    q += coWorker.Agent.Quality + coWorker.Agent.SdQuality * rg.granf()
+                    listOfAgents.append(coWorker.Agent)
 
         return Work(q, listOfAgents)
+
+class CoWorker():
+
+    def __init__(self, agent, coopProb):
+        self._agent = agent
+        self._prob = coopProb
+
+    @property
+    def Agent(self):
+        return self._agent
+
+    @Agent.setter
+    def Agent(self, newAg):
+          self._agent = newAg
+
+    @property
+    def Prob(self):
+        return float(self._prob)
+
+    @Prob.setter
+    def Prob(self, newProb):
+          self._prob = float(newProb)

@@ -1,4 +1,4 @@
-from agent import Agent
+from agent import Agent, CoWorker
 from work import Work
 from random_gen import RandomGenerator as rg
 from simu_utils import readConfigFile
@@ -25,13 +25,13 @@ def createAgents(numOfAgents, theList, config):
     std_std_qualty =  float(config.get("std_std_quality"))
 
     for i in range(0, numOfAgents):
-        ag = Agent(i, 
-                   credit + std_credit * rg.granf(),
-                   activity,
-                   quality + std_mean_quality * rg.granf(),
-                   std_quality + std_std_qualty * rg.granf())
+        theList.append(Agent(i, 
+                             credit + std_credit * rg.granf(),
+                             activity,
+                             quality + std_mean_quality * rg.granf(),
+                             std_quality + std_std_qualty * rg.granf()))
 
-        theList.append(ag)
+       
 
 def createNetwork(numOfAgents, theList, config):
     thr = float(config.get("threshold"))
@@ -61,8 +61,8 @@ def createNetwork(numOfAgents, theList, config):
 
         c = thr * rg.ranf()
         
-        ag1.addCoworker({"agent": ag2, "prob": c})
-        ag2.addCoworker({"agent": ag1, "prob": c})
+        ag1.addCoworker( CoWorker(ag2, c) )
+        ag2.addCoworker( CoWorker(ag1, c) )
     print("")
 
 def saveHistogram(iteration, hist):
@@ -109,8 +109,8 @@ def saveProbabilitiesStats(iteration, theList):
         for ag in theList:
             probF.write("{}".format(ag.Id))
             for coWorker in ag.ListOfCoworkers:
-                probF.write("{} {:.3f}".format(coWorker.get("agent").Id, coWorker.get("prob")))
-                probConfF.write("{:.3f}\n".format(coWorker.get("prob")))
+                probF.write("{} {:.3f}".format(coWorker.Agent.Id, coWorker.Prob))
+                probConfF.write("{:.3f}\n".format(coWorker.Prob))
             
             probF.write("\n")
 
@@ -134,19 +134,23 @@ def main(args):
     sys.stdout.flush()
     createNetwork(int(worldConfig.get("number_of_agents")), agentsList, worldConfig)
 
-    print("Starting the simulation")
+    
     ### Run the world
-    for period in range(0, int(worldConfig.get("max_period")) + 1):
-        stepText = "\tStep {:^4} / {}".format(period, int(worldConfig.get("max_period")))
+    print("Starting the simulation")
+
+    max_period = int(worldConfig.get("max_period"))
+    cd = float(worldConfig.get("credit_decrese"))
+    s = float(worldConfig.get("step"))
+
+    for period in range(0, max_period + 1):
+        stepText = "\tStep {:^4} / {}".format(period, max_period)
         print(len(stepText) * "\b", end = "")
         sys.stdout.flush()
         print(stepText, end = "")
         sys.stdout.flush()
 
         ### Lower the agents credits
-        ### Generate the works
-
-        cd = float(worldConfig.get("credit_decrese"))
+        ### Generate the works        
         for ag in agentsList:
             ag.Credit = ag.Credit - cd
             work = ag.submitWork()
@@ -156,11 +160,8 @@ def main(args):
         ### Works evolution
         worksList.sort()
 
-        cd = float(worldConfig.get("credit_decrese"))
         wc = float(len(worksList))
         ac = float(len(agentsList))
-
-        s = float(worldConfig.get("step"))
 
         for l, work in enumerate(worksList):
             l = float(l)
@@ -170,16 +171,18 @@ def main(args):
             ### calculate new probability
             d = s - 2.0 * l * s / wc
 
-            ### Asign new credit for each author of work                
+            ### Asign new credit for each author of work  
+
+            newCredit = p / float(work.NumberOfAuthors)         
             for auth in work.Authors:
-                auth.Credit += p / float(work.NumberOfAuthors)
+                auth.Credit += newCredit
 
             ### Adjust the probability of cooperation
             for i in range(0, len(work.Authors) - 1):
-                b = work.Authors[0].getProbabilityOfCooperation(work.Authors[i + 1])
-                c = work.Authors[i + 1].getProbabilityOfCooperation(work.Authors[0])
-                work.Authors[0].setProbabilityOfCooperation(work.Authors[i + 1], b + d)
-                work.Authors[i + 1].setProbabilityOfCooperation(work.Authors[0], c + d)
+                b = work.Authors[0].getProbOfCoop(work.Authors[i + 1])
+                c = work.Authors[i + 1].getProbOfCoop(work.Authors[0])
+                work.Authors[0].setProbOfCoop(work.Authors[i + 1], b + d)
+                work.Authors[i + 1].setProbOfCoop(work.Authors[0], c + d)
 
         ### Data evaluation - runs once per n_test simulation's steps
         if period % int(worldConfig.get("n_test")) == 0:    

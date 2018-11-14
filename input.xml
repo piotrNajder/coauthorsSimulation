@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <AuthorsWorldConfig>
     <credit>10</credit>
-    <std_credit>0</std_credit>
+    <std_credit>2</std_credit>
     <credit_decrese>0.1</credit_decrese>
 
     <mean_mean_quality>5.0</mean_mean_quality>
