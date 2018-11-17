@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <AuthorsWorldConfig>
     <credit>10</credit>
-    <std_credit>2</std_credit>
+    <std_credit>1</std_credit>
     <credit_decrese>0.1</credit_decrese>
 
     <mean_mean_quality>5.0</mean_mean_quality>
     <std_mean_quality>1.0</std_mean_quality>
     <mean_std_quality>1.0</mean_std_quality>
-    <std_std_quality>0</std_std_quality>
+    <std_std_quality>1.0</std_std_quality>
 
-    <activity>0.1</activity>
+    <activity>0.2</activity>
     <neighbours_avg>40</neighbours_avg>
-    <n_test>100</n_test>
-    <max_period>1000</max_period>
+    <n_test>333</n_test>
+    <max_period>1001</max_period>
     <number_of_agents>2000</number_of_agents>
     <threshold>0.01</threshold>
-    <step>0.03</step>
+    <step>0.1</step>
 </AuthorsWorldConfig>

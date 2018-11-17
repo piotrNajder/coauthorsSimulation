@@ -11,7 +11,36 @@ from simu_utils import natural_keys, readConfigFile
 worldConfig = readConfigFile("input.xml")
 n_test = int(worldConfig.get("n_test"))
 
-## Process the histogram data first
+### Avarage number of coauthors across the simulation
+
+avgs = list()
+with open("./results/w.dat") as f:
+    lines = f.readlines()
+
+    indexes = np.zeros(len(lines), dtype = np.int)
+    vals = np.zeros(len(lines), dtype = float)
+
+    for i, line in enumerate(lines):
+        index = int(line.split(" ")[0])
+        if index == 0: index = 1
+        val = float(line.split(" ")[1])
+        avgs.append((index, val))
+
+indexes = np.array(list([idx[0] for idx in avgs]))
+vals = np.array(list([idx[1] for idx in avgs]))
+
+fig, ax = plt.subplots()
+ax.scatter(indexes, vals)
+
+fig.suptitle('Avarage number of coauthors across the simulation time')
+
+z = np.polyfit(indexes, vals, 2)
+p = np.poly1d(z)
+plt.plot(indexes, p(indexes), "r--")
+
+plt.show()
+
+## Distribution of coauthors
 
 histList = gl.glob("./results/hist*.dat")
 histList.sort(key = natural_keys)
@@ -33,6 +62,8 @@ for histFile in histList:
 axesX = int(math.sqrt(len(histArrays)))
 axesY = axesX
 if axesY * axesX < len(histArrays):
+    if len(histArrays) < 4:
+        axesX += 1
     axesY += 1
 
 fig, axs = plt.subplots(axesX, axesY)
@@ -55,54 +86,34 @@ plt.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9,
 
 plt.show()
 
-### Avarage number of coauthors across the simulation
 
-avgs = list()
-with open("./results/w.dat") as f:
-    lines = f.readlines()
-
-    indexes = np.zeros(len(lines), dtype = np.int)
-    vals = np.zeros(len(lines), dtype = float)
-
-    for i, line in enumerate(lines):
-        index = int(line.split(" ")[0])
-        if index == 0: index = 1
-        val = float(line.split(" ")[1])
-        avgs.append((index, val))
-
-indexes = np.array(list([idx[0] for idx in avgs]))
-vals = np.array(list([idx[1] for idx in avgs]))
-
-fig, ax = plt.subplots()
-ax.scatter(indexes, vals)
-
-z = np.polyfit(indexes, vals, 3)
-p = np.poly1d(z)
-plt.plot(indexes, p(indexes), "r--")
-
-plt.show()
-
-###  Distribution of credits and agents quality across simulation time
+###  Distribution of credits across simulation time
 
 filesList = gl.glob("./results/agentStats*.dat")
 filesList.sort(key = natural_keys)
 
 creditsArrays = list()
+qualitiesArrays = list()
 import pdb
 for asFile in filesList:
     with open(asFile, "r") as f:        
         lines = f.readlines()
         crs = np.zeros(len(lines))
+        qls = np.zeros(len(lines))
         for i, line in enumerate(lines):
             #pdb.set_trace()
             vals = line.split(" ")
             crs[i] = float(vals[1])
+            qls[i] = float(vals[2])
         
         creditsArrays.append(crs)
+        qualitiesArrays.append(qls)
 
 axesX = int(math.sqrt(len(creditsArrays)))
 axesY = axesX
 if axesY * axesX < len(creditsArrays):
+    if len(histArrays) < 4:
+        axesX += 1
     axesY += 1
 
 fig, axs = plt.subplots(axesX, axesY)
@@ -126,3 +137,33 @@ plt.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9,
         top = 0.85, wspace = 0.8, hspace = 0.8)
 
 plt.show()
+
+
+### Credit vs quality of author across simulation
+
+fig, axs = plt.subplots(axesX, axesY)
+
+fig.suptitle('Distibution of credits in respect of agent quality')
+
+crsIndex = 0
+for i in range(0, axesX):
+    for j in range(0, axesY):
+
+        bins = (int(np.ceil(max(qualitiesArrays[crsIndex]))) - \
+                    int(np.floor(min(qualitiesArrays[crsIndex])))) * 4
+
+        s = crsIndex * n_test
+        if s == 0: s = 1
+
+        axs[i, j].hist2d(qualitiesArrays[crsIndex], creditsArrays[crsIndex], bins = bins)        
+        axs[i, j].set_title("s = {}".format(s))
+        crsIndex += 1
+        if crsIndex >= len(creditsArrays): break
+    if crsIndex >= len(creditsArrays): break
+
+plt.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9,
+        top = 0.85, wspace = 0.8, hspace = 0.8)
+
+plt.show()
+
+### Probability of cooperation vs quality of authors

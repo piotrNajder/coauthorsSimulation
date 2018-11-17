@@ -14,7 +14,7 @@ class Agent():
 
     @property
     def Id(self):
-        return self._id
+        return int(self._id)
 
     @property
     def Credit(self):
@@ -66,9 +66,11 @@ class Agent():
             elif p > 1.0: p = 1.0
             ag.Prob = p
 
-    def addCoworker(self, cowrker):       
-        self._listOfCoworkers.append(cowrker)
-
+    def addCoworker(self, coworker):
+        cw = next((x for x in self._listOfCoworkers if x.Agent.Id == coworker.Agent.Id), None)
+        if cw == None:
+            self._listOfCoworkers.append(coworker)
+            
     def returnMe(self):
         return self
 
@@ -77,12 +79,13 @@ class Agent():
 
         listOfAgents = list()
 
-        if rg.ranf() < self._activity:
+        if rg.randU() < self._activity:
             listOfAgents.append(self)
-            q = self._quality + rg.granf(m = self._sdQuality)
+            q = self._quality + rg.randN(m = self._sdQuality)
             for coWorker in self._listOfCoworkers:                
-                if rg.ranf() < coWorker.Prob:
-                    q += coWorker.Agent.Quality + rg.granf(m = coWorker.Agent.SdQuality)
+                if rg.randU() < coWorker.Prob:
+                    q += coWorker.Agent.Quality + \
+                         rg.randN(m = coWorker.Agent.SdQuality)
                     listOfAgents.append(coWorker.Agent)
 
         return Work(q, listOfAgents)

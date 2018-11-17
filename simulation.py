@@ -27,15 +27,15 @@ def createAgents(numOfAgents, theList, config):
 
     for i in range(0, numOfAgents):
         theList.append(Agent(i, 
-                             credit + rg.granf(m = std_credit),
+                             credit + rg.randN(m = std_credit),
                              activity,
-                             quality + rg.granf(m = std_mean_quality),
-                             std_quality + rg.granf(m = std_std_qualty)))
+                             quality + rg.randN(m = std_mean_quality),
+                             std_quality + rg.randN(m = std_std_qualty)))
 
 
 def createNetwork(numOfAgents, theList, config):
     thr = float(config.get("threshold"))
-    loops = int(config.get("neighbours_avg")) * numOfAgents + 1
+    loops = int(int(config.get("neighbours_avg")) / 2 * numOfAgents + 1)
     printMarker = int(loops / 10)
     for k in range(0, loops):
         ### progress bar 
@@ -44,10 +44,10 @@ def createNetwork(numOfAgents, theList, config):
             sys.stdout.flush()
             
         ### get two random Ids
-        i = rg.iranx(numOfAgents) - 1
-        j = rg.iranx(numOfAgents) - 1
+        i = rg.randI(numOfAgents)
+        j = rg.randI(numOfAgents)
         while(i == j):            
-            j = rg.iranx(numOfAgents) - 1
+            j = rg.randI(numOfAgents)
 
         ### get agent objects for given id
         ag1 = None
@@ -59,7 +59,7 @@ def createNetwork(numOfAgents, theList, config):
         ag = next((x for x in theList if x.Id == j), None)
         if ag != None: ag2 = ag
 
-        c = thr * rg.ranf()
+        c = thr * rg.randU()
         
         ag1.addCoworker( CoWorker(ag2, c) )
         ag2.addCoworker( CoWorker(ag1, c) )
@@ -92,14 +92,14 @@ def saveHistogramStats(counter, hist):
     std = math.sqrt(std - mean * mean)
 
     with open(fName, "a") as f:
-        f.write("{} {:.3f} {:.3f} {}\n".format(counter, mean, std, l ))
+        f.write("{:d} {:.3f} {:.3f} {}\n".format(counter, mean, std, l ))
 
 def saveConfig(iteration, theList):
     fileDir = os.path.dirname(os.path.realpath('__file__'))
     fName = os.path.join(fileDir, "results/agentStats{}.dat".format(iteration))
     with open(fName, "w") as f:
         for ag in theList:
-            f.write("{} {:.3f} {:.3f} {:.3f}\n".format(int(ag.Id), ag.Credit, ag.Quality, ag.NumberOfCoworkers))
+            f.write("{:d} {:.3f} {:.3f} {:.3f}\n".format(int(ag.Id), ag.Credit, ag.Quality, ag.NumberOfCoworkers))
 
 def saveProbabilitiesStats(iteration, theList):
     fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -107,9 +107,9 @@ def saveProbabilitiesStats(iteration, theList):
     probConfName = os.path.join(fileDir, "results/prob_conf{}.dat".format(iteration))
     with open(probFName, "w") as probF, open(probConfName, "w") as probConfF:
         for ag in theList:
-            probF.write("{}".format(ag.Id))
+            probF.write("{:d} {:d}".format(ag.Id, ag.NumberOfCoworkers))
             for coWorker in ag.ListOfCoworkers:
-                probF.write("{} {:.3f}".format(coWorker.Agent.Id, coWorker.Prob))
+                probF.write(" {:d} {:.3f}".format(coWorker.Agent.Id, coWorker.Prob))
                 probConfF.write("{:.3f}\n".format(coWorker.Prob))
             
             probF.write("\n")
