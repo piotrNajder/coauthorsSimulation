@@ -9,7 +9,7 @@
     <mean_std_quality>1.0</mean_std_quality>
     <std_std_quality>1.0</std_std_quality>
 
-    <activity>0.2</activity>
+    <activity>0.1</activity>
     <neighbours_avg>40</neighbours_avg>
     <n_test>333</n_test>
     <max_period>1001</max_period>

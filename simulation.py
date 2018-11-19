@@ -17,20 +17,18 @@ import sys
 CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
 
 def createAgents(numOfAgents, theList, config):
-    credit = float(config.get("credit"))
-    std_credit = float(config.get("std_credit"))
+    credit = float(config.get("credit")) + float(config.get("std_credit"))
     activity = float(config.get("activity"))
-    quality = float(config.get("mean_mean_quality")) 
-    std_mean_quality = float(config.get("std_mean_quality"))
-    std_quality = float(config.get("mean_std_quality")) 
-    std_std_qualty =  float(config.get("std_std_quality"))
-
-    for i in range(0, numOfAgents):
-        theList.append(Agent(i, 
-                             credit + rg.randN(m = std_credit),
-                             activity,
-                             quality + rg.randN(m = std_mean_quality),
-                             std_quality + rg.randN(m = std_std_qualty)))
+    quality = float(config.get("mean_mean_quality")) + float(config.get("std_mean_quality"))
+    std_quality = float(config.get("mean_std_quality")) + float(config.get("std_std_quality"))
+    
+    for i in range(0, numOfAgents + 1):
+        ag = Agent(i, 
+                   credit * rg.randN(),
+                   activity,
+                   quality * rg.randN(),
+                   std_quality * rg.randN())
+        theList.append(ag)
 
 
 def createNetwork(numOfAgents, theList, config):
