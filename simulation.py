@@ -17,17 +17,20 @@ import sys
 CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
 
 def createAgents(numOfAgents, theList, config):
-    credit = float(config.get("credit")) + float(config.get("std_credit"))
+    credit = float(config.get("credit"))
+    std_credit = float(config.get("std_credit"))
     activity = float(config.get("activity"))
-    quality = float(config.get("mean_mean_quality")) + float(config.get("std_mean_quality"))
-    std_quality = float(config.get("mean_std_quality")) + float(config.get("std_std_quality"))
+    quality = float(config.get("mean_mean_quality"))
+    std_mean_quality = float(config.get("std_mean_quality"))
+    std_quality = float(config.get("mean_std_quality"))
+    std_std_quality = float(config.get("std_std_quality"))
     
     for i in range(0, numOfAgents + 1):
         ag = Agent(i, 
-                   credit * rg.randN(),
+                   rg.randN(credit, std_credit),
                    activity,
-                   quality * rg.randN(),
-                   std_quality * rg.randN())
+                   rg.randN(quality, std_mean_quality),
+                   rg.randN(std_quality, std_std_quality))
         theList.append(ag)
 
 
@@ -147,7 +150,7 @@ def main(args):
 
     
     ### Run the world
-    print("Starting the simulation")
+    print("Starting the simulation\n")
 
     max_period = int(worldConfig.get("max_period"))
     cd = float(worldConfig.get("credit_decrese"))
@@ -170,7 +173,7 @@ def main(args):
                 worksList.append(work)
         
         ### Works evolution
-        worksList.sort()
+        worksList.sort(reverse = True)
 
         wc = float(len(worksList))
         ac = float(len(agentsList))
@@ -180,7 +183,8 @@ def main(args):
             for i in range(len(work.Authors) - 1, -1, -1):
                 cooperateProb = cthr * rg.randU()
                 if cooperateProb < rg.randU():
-                    del work.Authors[i]
+                    if len(work.Authors) > 1:
+                        del work.Authors[i]
 
             if work.NumberOfAuthors == 0:
                 continue

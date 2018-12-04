@@ -76,19 +76,17 @@ class Agent():
 
     def submitWork(self):
         q = 0.0
-
-        listOfAgents = list()
-
+        listOfWorkAuthors = list()
         if rg.randU() < self._activity:
-            listOfAgents.append(self)
+            listOfWorkAuthors.append(self)
             q = self._quality + rg.randN(m = self._sdQuality)
-            for coWorker in self._listOfCoworkers:                
+            for coWorker in self._listOfCoworkers:
                 if rg.randU() < coWorker.Prob:
                     q += coWorker.Agent.Quality + \
                          rg.randN(m = coWorker.Agent.SdQuality)
-                    listOfAgents.append(coWorker.Agent)
+                    listOfWorkAuthors.append(coWorker.Agent)
 
-        return Work(q, listOfAgents)
+        return Work(q, listOfWorkAuthors)
 
 class CoWorker():
 
