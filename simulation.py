@@ -152,6 +152,7 @@ def main(args):
     max_period = int(worldConfig.get("max_period"))
     cd = float(worldConfig.get("credit_decrese"))
     s = float(worldConfig.get("step"))
+    cthr = float(worldConfig.get("cooperate_threshold"))
 
     for period in range(0, max_period + 1):
         stepText = "\tStep {:^4} / {}".format(period, max_period)
@@ -175,6 +176,15 @@ def main(args):
         ac = float(len(agentsList))
 
         for l, work in enumerate(worksList):
+            ### Calculate cooperate probability and remove authors who do not want to cooperate
+            for i in range(len(work.Authors) - 1, -1, -1):
+                cooperateProb = cthr * rg.randU()
+                if cooperateProb < rg.randU():
+                    del work.Authors[i]
+
+            if work.NumberOfAuthors == 0:
+                continue
+
             l = float(l)
             ### calculate the profit
             p = 2.0 * cd * ( 1.0 - ( l + 0.5 ) / wc ) / wc * ac
