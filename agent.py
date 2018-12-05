@@ -70,6 +70,14 @@ class Agent():
         cw = next((x for x in self._listOfCoworkers if x.Agent.Id == coworker.Agent.Id), None)
         if cw == None:
             self._listOfCoworkers.append(coworker)
+
+    def remRetiredCoWorkers(self, retiredAgents):
+        for cw in self._listOfCoworkers:
+            if cw.Agent.Id in retiredAgents:
+                cw = None
+
+        self._listOfCoworkers = list(filter(None.__ne__, self._listOfCoworkers))
+
             
     def returnMe(self):
         return self

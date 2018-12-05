@@ -10,11 +10,13 @@
     <std_std_quality>0.1</std_std_quality>
 
     <activity>0.25</activity>
-    <neighbours_avg>40</neighbours_avg>
-    <n_test>333</n_test>
-    <max_period>1001</max_period>
-    <number_of_agents>2000</number_of_agents>
+    <neighbours_avg>40</neighbours_avg>    
     <threshold>0.05</threshold>
     <cooperate_threshold>0.8</cooperate_threshold>
     <step>0.1</step>
+
+    <n_test>200</n_test>
+    <max_period>1250</max_period>
+    <number_of_agents>2000</number_of_agents>
+    <generation_period>250</generation_period>
 </AuthorsWorldConfig>

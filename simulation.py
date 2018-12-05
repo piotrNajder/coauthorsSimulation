@@ -16,7 +16,7 @@ import sys
 
 CONST_MAX_AUTHORS = 200  # Max numbers of coauthors we expect
 
-def createAgents(numOfAgents, theList, config):
+def createAgents(numOfAgents, theList, config, startIndex = None):
     credit = float(config.get("credit"))
     std_credit = float(config.get("std_credit"))
     activity = float(config.get("activity"))
@@ -25,13 +25,22 @@ def createAgents(numOfAgents, theList, config):
     std_quality = float(config.get("mean_std_quality"))
     std_std_quality = float(config.get("std_std_quality"))
     
-    for i in range(0, numOfAgents + 1):
-        ag = Agent(i, 
-                   rg.randN(credit, std_credit),
-                   activity,
-                   rg.randN(quality, std_mean_quality),
-                   rg.randN(std_quality, std_std_quality))
-        theList.append(ag)
+    if startIndex == None:
+        for i in range(0, numOfAgents + 1):
+            ag = Agent(i, 
+                    rg.randN(credit, std_credit),
+                    activity,
+                    rg.randN(quality, std_mean_quality),
+                    rg.randN(std_quality, std_std_quality))
+            theList.append(ag)
+    else:
+        for i in range(startIndex, numOfAgents + startIndex + 1):
+            ag = Agent(i, 
+                    rg.randN(credit, std_credit),
+                    activity,
+                    rg.randN(quality, std_mean_quality),
+                    rg.randN(std_quality, std_std_quality))
+            theList.append(ag)
 
 
 def createNetwork(numOfAgents, theList, config):
@@ -47,7 +56,7 @@ def createNetwork(numOfAgents, theList, config):
         ### get two random Ids
         i = rg.randI(numOfAgents)
         j = rg.randI(numOfAgents)
-        while(i == j):            
+        while(i == j):
             j = rg.randI(numOfAgents)
 
         ### get agent objects for given id
@@ -119,7 +128,8 @@ def main(args):
     
     worldConfig = {}
     agentsList = list()
-    worksList = list()   
+    worksList = list()
+    lastAgentId = 0
 
     worldConfig = readConfigFile(args.inputFile)    
 
@@ -142,12 +152,12 @@ def main(args):
     ### Init the agents
     print("Creating authors")
     createAgents(int(worldConfig.get("number_of_agents")), agentsList, worldConfig)
-    
+    lastAgentId = len(agentsList) - 1
+
     ### Creat the network of agents in world
     print("Connecting agents into the network ", end = "")
     sys.stdout.flush()
     createNetwork(int(worldConfig.get("number_of_agents")), agentsList, worldConfig)
-
     
     ### Run the world
     print("Starting the simulation\n")
@@ -157,15 +167,56 @@ def main(args):
     s = float(worldConfig.get("step"))
     cthr = float(worldConfig.get("cooperate_threshold"))
 
-    for period in range(0, max_period + 1):
+    for period in range(0, max_period):
         stepText = "\tStep {:^4} / {}".format(period, max_period)
         print(len(stepText) * "\b", end = "")
         sys.stdout.flush()
         print(stepText, end = "")
         sys.stdout.flush()
 
+        if period % int(worldConfig.get("generation_period")) == 0 and period != 0:
+            ### Remove 10% of agents with the lowest credit
+            ### Replace them with new agents 
+
+            agentsList.sort(key = lambda a: a.Credit, reverse = True)
+            remCount = int(0.1 * len(agentsList))
+            removedAgents = list()
+            for i in range(len(agentsList) - 1, len(agentsList) - remCount -1, -1):
+                removedAgents.append(agentsList[i].Id)
+                agentsList[i] = None
+
+            agentsList = agentsList[:-remCount or None]
+
+            coWorkersTotal = 0
+            for ag in agentsList:
+                coWorkersTotal += ag.NumberOfCoworkers
+
+            coWorkersAvg = coWorkersTotal / len(agentsList)
+
+            createAgents(remCount, agentsList, worldConfig, lastAgentId + 1) ### adds new agents to the world 
+            lastAgentId += remCount
+
+            thr = float(worldConfig.get("threshold"))
+            for ag in agentsList:
+                ag.remRetiredCoWorkers(removedAgents)
+                if ag.NumberOfCoworkers < coWorkersAvg:
+                    ### Add new coworkers for agent            
+                    loops = int(coWorkersAvg - ag.NumberOfCoworkers)
+                    for k in range(0, loops): 
+                        ### get random Id
+                        i = rg.randI(lastAgentId)
+                        if i == ag.Id:
+                            continue
+
+                        ag2 = next((x for x in agentsList if x.Id == i), None)
+                        if ag2 != None and ag2 not in ag.ListOfCoworkers:
+                            c = thr * rg.randU()
+                            ag.addCoworker( CoWorker(ag2, c) )
+                            ag2.addCoworker( CoWorker(ag, c) )
+
+
         ### Lower the agents credits
-        ### Generate the works        
+        ### Generate the works
         for ag in agentsList:
             ag.Credit = ag.Credit - cd
             work = ag.submitWork()
